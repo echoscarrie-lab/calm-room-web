@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff3eb">
+<title>治愈房间 / Calm Room</title>
+<style>
+:root{
+  --ink:#7a5d4d;
+  --muted:#a78b7c;
+  --paper:#fffdf9;
+  --cream:#fff4eb;
+  --panel:#fffaf5;
+  --pink:#ff819f;
+  --pink-dark:#ef6687;
+  --blue:#22b8ee;
+  --green:#64c95d;
+  --orange:#ff9f35;
+  --gold:#ffc93d;
+  --line:#f1ddd2;
+  --soft-shadow:0 12px 28px rgba(146,92,64,.16),0 2px 8px rgba(146,92,64,.08);
+  --inner-shadow:inset 0 0 0 1px rgba(142,92,64,.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  overflow:hidden;
+  font-family:"PingFang SC","Microsoft YaHei",ui-rounded,system-ui,sans-serif;
+  color:var(--ink);
+  background:#fae9dd;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+button,textarea{font:inherit}
+button{cursor:pointer}
+#app{
+  width:100%;
+  max-width:520px;
+  height:100dvh;
+  margin:0 auto;
+  display:grid;
+  grid-template-rows:auto minmax(260px,1fr) auto;
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(180deg,#fff8f2 0%,#ffeedd 100%);
+}
+.topbar{
+  height:76px;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 8px;
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) 114px;
+  gap:10px;
+  align-items:center;
+  z-index:10;
+}
+.iconBtn,.scorePill{
+  border:0;
+  height:52px;
+  border-radius:20px;
+  background:rgba(255,250,246,.96);
+  box-shadow:var(--soft-shadow);
+  color:#a88475;
+}
+.backBtn{
+  display:grid;
+  place-items:center;
+  color:#f36f8d;
+  font-size:2.2rem;
+  font-weight:900;
+  line-height:1;
+}
+.topActions{
+  display:grid;
+  grid-template-columns:68px 46px;
+  gap:8px;
+  align-items:center;
+}
+.scorePill{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-size:1.18rem;
+  font-weight:900;
+}
+.scorePill .starIcon{
+  color:var(--gold);
+  font-size:1.45rem;
+  text-shadow:0 1px 0 #fff,0 3px 8px rgba(255,173,40,.32);
+}
+.gearBtn{
+  display:grid;
+  place-items:center;
+  color:#a677a2;
+  font-size:1.55rem;
+}
+h1{
+  margin:0;
+  text-align:center;
+  font-size:clamp(1.72rem,8.1vw,2.45rem);
+  line-height:.95;
+  letter-spacing:0;
+  white-space:nowrap;
+  text-shadow:0 3px 0 #fff,0 6px 10px rgba(118,82,64,.18);
+}
+h1 span{display:inline-block}
+.c1{color:#ff758d}.c2{color:var(--orange)}.c3{color:var(--green)}.c4{color:var(--blue)}
+.settingsPanel{
+  position:absolute;
+  right:16px;
+  top:calc(env(safe-area-inset-top) + 72px);
+  z-index:20;
+  width:178px;
+  padding:10px;
+  border-radius:18px;
+  background:rgba(255,250,246,.98);
+  box-shadow:var(--soft-shadow);
+  display:grid;
+  gap:8px;
+}
+.settingsPanel[hidden]{display:none}
+.settingsPanel button{
+  height:42px;
+  border:0;
+  border-radius:14px;
+  color:var(--ink);
+  background:#fff4ed;
+  font-weight:900;
+}
+.scene{
+  position:relative;
+  min-height:0;
+  overflow:hidden;
+  border-radius:28px 28px 0 0;
+  background:#f5d9c8;
+}
+.room{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  pointer-events:none;
+}
+.scene:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:24%;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,238,221,0),rgba(255,238,221,.64));
+  z-index:1;
+}
+.note{
+  position:absolute;
+  left:50%;
+  top:44%;
+  width:min(72vw,310px);
+  min-height:142px;
+  transform:translate(-50%,0) rotate(-2deg);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:28px 22px 20px;
+  border-radius:14px;
+  background:#fffdf8;
+  border:1px solid rgba(120,82,64,.08);
+  box-shadow:5px 8px 0 rgba(92,64,50,.22),0 16px 30px rgba(92,60,42,.17);
+  color:#76594d;
+  font-size:clamp(1.02rem,4.1vw,1.26rem);
+  font-weight:850;
+  line-height:1.36;
+  white-space:pre-wrap;
+  overflow:hidden;
+  z-index:4;
+}
+.note:before{
+  content:"";
+  position:absolute;
+  inset:14px 20px 18px;
+  background:repeating-linear-gradient(to bottom,transparent 0 27px,rgba(116,84,68,.08) 28px 29px);
+  pointer-events:none;
+}
+.note:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-5px;
+  width:42px;
+  height:10px;
+  transform:translateX(-50%);
+  border-radius:4px;
+  background:rgba(176,150,125,.36);
+}
+.noteText{position:relative;z-index:1;width:100%}
+.note img{
+  position:relative;
+  z-index:1;
+  max-width:100%;
+  max-height:180px;
+  border-radius:10px;
+  object-fit:contain;
+  box-shadow:0 6px 16px rgba(90,60,42,.12);
+}
+.note.hasImage{padding:24px;min-height:176px;background:#fff}
+.note.hasImage:before{display:none}
+.note.show{display:flex;animation:noteIn .42s cubic-bezier(.2,.9,.2,1.1)}
+.note.gone{pointer-events:none}
+.note.gone.hammer{animation:smashOut 1.55s cubic-bezier(.18,.82,.18,1) forwards}
+.note.gone.fire{animation:burnOut 2.25s ease-in forwards}
+.note.gone.tear{animation:cutOut 1.6s cubic-bezier(.22,.8,.12,1) forwards}
+.note.gone.shredder{animation:shredOut 1.85s cubic-bezier(.2,.76,.18,1) forwards}
+.note.gone.ledge{animation:slideOut 1.65s cubic-bezier(.2,.8,.12,1) forwards}
+.note.gone.erase{animation:erasePaper 2.05s ease-out forwards}
+.note.gone.erase .noteText{animation:eraseText 1.42s ease-in forwards}
+.note.gone.erase img{animation:eraseImage 1.5s ease-in forwards}
+@keyframes noteIn{from{opacity:0;transform:translate(-50%,18px) rotate(1deg) scale(.92)}to{opacity:1;transform:translate(-50%,0) rotate(-2deg) scale(1)}}
+@keyframes smashOut{18%{transform:translate(-50%,-7px) rotate(1deg) scale(1.04)}34%{transform:translate(-50%,8px) rotate(-4deg) scale(.94)}54%{transform:translate(-50%,-3px) rotate(7deg) scale(.86)}76%{opacity:.78;transform:translate(-50%,16px) rotate(-11deg) scale(.58)}to{opacity:0;transform:translate(-50%,44px) rotate(16deg) scale(.18)}}
+@keyframes burnOut{12%{filter:saturate(1.3) brightness(1.12);box-shadow:0 0 26px rgba(255,126,44,.24),5px 8px 0 rgba(93,68,54,.22),0 16px 30px rgba(92,60,42,.16)}34%{opacity:.98;transform:translate(-50%,-4px) rotate(1deg) scale(.98);filter:sepia(.2) brightness(1.05);box-shadow:0 0 44px rgba(255,129,44,.42),5px 8px 0 rgba(93,68,54,.18)}62%{opacity:.82;transform:translate(-50%,-16px) rotate(4deg) scale(.78);filter:sepia(.85) brightness(.75) saturate(1.4)}84%{opacity:.42;transform:translate(-50%,-34px) rotate(8deg) scale(.56);filter:sepia(1) brightness(.52) blur(1px)}to{opacity:0;transform:translate(-50%,-52px) rotate(11deg) scale(.38);filter:sepia(1) brightness(.42) blur(3px)}}
+@keyframes cutOut{20%{transform:translate(-50%,0) rotate(-7deg) scaleX(.98)}44%{transform:translate(-54%,3px) rotate(10deg) scaleX(.72)}72%{opacity:.72;transform:translate(-47%,7px) rotate(-16deg) scaleX(.36)}to{opacity:0;transform:translate(-50%,10px) rotate(22deg) scaleX(.06)}}
+@keyframes shredOut{22%{transform:translate(-50%,6px) scaleY(.9)}48%{transform:translate(-50%,28px) scaleY(.62)}76%{opacity:.62;transform:translate(-50%,58px) scaleY(.32)}to{opacity:0;transform:translate(-50%,98px) scaleY(.08)}}
+@keyframes slideOut{18%{transform:translate(-50%,0) rotate(-2deg) scale(1.02)}42%{transform:translate(-26%,24px) rotate(6deg) scale(.96)}72%{opacity:.72;transform:translate(24vw,58px) rotate(14deg) scale(.86)}to{opacity:0;transform:translate(66vw,92px) rotate(22deg) scale(.72)}}
+@keyframes eraseText{0%,12%{clip-path:inset(0 0 0 0);opacity:1;filter:none}46%{clip-path:inset(0 0 0 36%);opacity:.86;filter:blur(.2px)}76%{clip-path:inset(0 0 0 78%);opacity:.42;filter:blur(1px)}to{clip-path:inset(0 0 0 100%);opacity:0;filter:blur(2px)}}
+@keyframes eraseImage{0%,12%{opacity:1;clip-path:inset(0 0 0 0)}76%{opacity:.45;clip-path:inset(0 0 0 74%)}to{opacity:0;clip-path:inset(0 0 0 100%)}}
+@keyframes erasePaper{0%,70%{opacity:1;transform:translate(-50%,0) rotate(-2deg) scale(1);filter:none}88%{opacity:.82;transform:translate(-50%,0) rotate(-2deg) scale(.98);filter:brightness(1.04)}to{opacity:0;transform:translate(-50%,8px) rotate(-2deg) scale(.94);filter:blur(2px) brightness(1.08)}}
+.effectLayer{
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:4;
+}
+.flameLayer{
+  inset:-42px -18px -20px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:0;
+}
+.flameLayer span{
+  position:relative;
+  display:block;
+  width:48px;
+  height:96px;
+  border-radius:58% 58% 42% 42%;
+  transform-origin:50% 100%;
+  opacity:0;
+  background:
+    radial-gradient(circle at 50% 72%,rgba(255,245,127,.98) 0 18%,rgba(255,182,45,.96) 19% 39%,rgba(255,85,32,.92) 40% 66%,rgba(211,41,28,.72) 67% 100%);
+  clip-path:polygon(50% 0,66% 22%,82% 38%,94% 64%,78% 100%,22% 100%,6% 64%,18% 38%,34% 22%);
+  filter:drop-shadow(0 0 12px rgba(255,84,30,.6)) drop-shadow(0 -8px 16px rgba(255,160,34,.34));
+  animation:flameRise 2.18s ease-in-out forwards;
+}
+.flameLayer span:after{
+  content:"";
+  position:absolute;
+  left:28%;
+  right:28%;
+  bottom:14%;
+  top:35%;
+  border-radius:50% 50% 42% 42%;
+  background:radial-gradient(circle at 50% 72%,rgba(255,255,202,.98),rgba(255,213,72,.92) 54%,rgba(255,151,37,0) 72%);
+  clip-path:polygon(50% 0,75% 44%,70% 100%,30% 100%,25% 44%);
+}
+.flameLayer span:nth-child(2){height:118px;width:58px;animation-delay:.08s}
+.flameLayer span:nth-child(3){height:104px;width:52px;animation-delay:.18s}
+.flameLayer span:nth-child(4){height:84px;width:42px;animation-delay:.28s}
+@keyframes flameRise{0%{opacity:0;transform:translateY(30px) scale(.42) rotate(-6deg)}14%{opacity:1;transform:translateY(8px) scale(.9) rotate(4deg)}45%{opacity:1;transform:translateY(-10px) scale(1.1) rotate(-5deg)}74%{opacity:.72;transform:translateY(-46px) scale(.92) rotate(7deg)}to{opacity:0;transform:translateY(-96px) scale(.48) rotate(-4deg)}}
+.eraserLayer{overflow:visible}
+.eraserBrush{
+  position:absolute;
+  left:-34%;
+  top:24%;
+  width:46%;
+  height:42px;
+  border-radius:24px;
+  background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.96) 24%,rgba(255,244,231,.96) 74%,rgba(255,255,255,0));
+  box-shadow:0 0 18px rgba(255,255,255,.88),0 8px 20px rgba(190,144,112,.16);
+  transform:rotate(-8deg);
+  animation:eraserSweep 1.55s ease-in-out forwards;
+}
+.eraserDust{
+  position:absolute;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:rgba(226,205,190,.75);
+  top:54%;
+  opacity:0;
+  animation:eraseDust 1.45s ease-out forwards;
+}
+.eraserDust:nth-child(2){left:18%;animation-delay:.12s}
+.eraserDust:nth-child(3){left:42%;animation-delay:.36s}
+.eraserDust:nth-child(4){left:64%;animation-delay:.62s}
+@keyframes eraserSweep{0%{left:-38%;opacity:0}12%{opacity:1}72%{left:74%;opacity:1}to{left:112%;opacity:0}}
+@keyframes eraseDust{0%,18%{opacity:0;transform:translate(0,0) scale(.5)}42%{opacity:.75;transform:translate(4px,8px) scale(1)}to{opacity:0;transform:translate(18px,26px) scale(.35)}}
+.particle{
+  position:absolute;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:8;
+  animation:floatParticle 1.35s ease-out forwards;
+}
+@keyframes floatParticle{to{opacity:0;transform:translate(var(--x),var(--y)) scale(.2)}}
+.final{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+  background:radial-gradient(circle at 50% 42%,rgba(255,235,176,.52),rgba(255,248,242,.72) 40%,rgba(255,248,242,.9));
+  z-index:9;
+}
+.final.show{display:flex}
+.finalCard{
+  width:min(84vw,330px);
+  border-radius:28px;
+  background:rgba(255,250,246,.98);
+  box-shadow:var(--soft-shadow);
+  padding:28px 22px;
+  text-align:center;
+}
+.finalCard p{
+  margin:0 0 20px;
+  font-size:1.42rem;
+  font-weight:900;
+}
+.finalCard button{
+  height:50px;
+  min-width:150px;
+  border:0;
+  border-radius:999px;
+  color:white;
+  background:linear-gradient(180deg,#ff8fa8,#ff718f);
+  box-shadow:0 12px 22px rgba(255,108,141,.26);
+  font-weight:900;
+}
+.panel{
+  position:relative;
+  z-index:5;
+  padding:16px 22px calc(env(safe-area-inset-bottom) + 14px);
+  border-radius:30px 30px 0 0;
+  background:rgba(255,250,245,.98);
+  box-shadow:0 -10px 34px rgba(133,84,62,.16),var(--inner-shadow);
+}
+.tools{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.tool{
+  height:clamp(92px,12.2dvh,116px);
+  border:0;
+  border-radius:22px;
+  background:linear-gradient(180deg,#fffdf9,#fff8f1);
+  box-shadow:0 8px 20px rgba(144,92,65,.10),var(--inner-shadow);
+  color:var(--ink);
+  display:grid;
+  grid-template-rows:1fr auto;
+  justify-items:center;
+  align-items:center;
+  gap:2px;
+  padding:10px 6px 12px;
+  font-weight:900;
+  transition:transform .16s,box-shadow .16s;
+}
+.tool .icon{
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:clamp(48px,7.1dvh,66px);
+  filter:drop-shadow(0 6px 8px rgba(138,88,60,.16));
+}
+.tool .icon img{
+  display:block;
+  width:auto;
+  height:clamp(42px,6.6dvh,60px);
+  max-width:88%;
+  object-fit:contain;
+}
+.tool .label{
+  font-size:clamp(1rem,4.3vw,1.32rem);
+  line-height:1.06;
+  white-space:nowrap;
+  text-shadow:0 1px 0 #fff;
+}
+.tool.active{
+  transform:translateY(-1px);
+  box-shadow:inset 0 0 0 3px rgba(255,129,159,.45),0 10px 22px rgba(255,129,159,.18);
+}
+.composer{
+  margin-top:14px;
+  display:grid;
+  gap:12px;
+}
+.inputWrap{
+  position:relative;
+}
+textarea{
+  display:block;
+  width:100%;
+  height:60px;
+  min-width:0;
+  resize:none;
+  border:2px dashed #ffc4cf;
+  border-radius:18px;
+  outline:none;
+  background:rgba(255,253,249,.96);
+  color:#766052;
+  padding:15px 64px 14px 18px;
+  font-size:clamp(1rem,4.4vw,1.25rem);
+  font-weight:850;
+  line-height:1.25;
+}
+textarea::placeholder{color:#b39b90}
+.inputStar{
+  position:absolute;
+  right:16px;
+  top:50%;
+  width:38px;
+  height:38px;
+  transform:translateY(-50%);
+  display:grid;
+  place-items:center;
+  color:var(--gold);
+  font-size:1.7rem;
+  pointer-events:none;
+  text-shadow:0 1px 0 #fff,0 3px 8px rgba(255,173,40,.32);
+}
+.actionRow{
+  display:grid;
+  grid-template-columns:1.08fr .92fr;
+  gap:12px;
+}
+.placeBtn,.photoBtn{
+  height:62px;
+  border:0;
+  border-radius:22px;
+  font-size:clamp(1.1rem,5.4vw,1.6rem);
+  font-weight:900;
+  box-shadow:var(--soft-shadow);
+}
+.placeBtn{
+  color:#fff;
+  background:linear-gradient(180deg,#ff8ea8,#ff718f);
+  text-shadow:0 2px 0 rgba(174,66,92,.24);
+}
+.photoBtn{
+  color:#9a765c;
+  background:linear-gradient(180deg,#fffdf9,#fff7ef);
+}
+.photoBtn .photoIcon{font-size:1.2em;margin-right:.35em}
+.status{
+  height:28px;
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  color:#9b7c68;
+  font-size:clamp(.9rem,3.8vw,1.08rem);
+  font-weight:900;
+}
+.status b{color:#3e91cf;font-size:1.1em}
+.divider{
+  width:1px;
+  align-self:stretch;
+  background:#dcc1ad;
+}
+input[type=file]{display:none}
+@media (min-width:700px){
+  #app{
+    height:min(100vh,980px);
+    margin:0 auto;
+    border-radius:34px;
+    box-shadow:0 0 0 1px rgba(126,85,62,.08),0 24px 80px rgba(112,72,52,.24);
+  }
+  body{display:grid;place-items:center}
+}
+@media (max-width:370px){
+  .topbar{grid-template-columns:54px minmax(0,1fr) 104px;padding-left:12px;padding-right:12px;gap:8px}
+  .topActions{grid-template-columns:62px 42px}
+  h1{font-size:1.58rem}
+  .panel{padding-left:14px;padding-right:14px}
+  .tools{gap:9px}
+  .actionRow{gap:9px}
+}
+@media (max-height:760px){
+  .topbar{height:66px;padding-top:calc(env(safe-area-inset-top) + 8px)}
+  .iconBtn,.scorePill{height:46px;border-radius:16px}
+  .panel{padding-top:12px}
+  .tools{gap:9px}
+  .tool{height:82px;border-radius:18px}
+  .tool .icon{height:40px}
+  .tool .icon img{height:38px}
+  .tool .label{font-size:.92rem}
+  textarea{height:52px}
+  .placeBtn,.photoBtn{height:54px}
+  .status{margin-top:8px}
+  .note{top:37%;min-height:126px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button class="iconBtn backBtn" id="backBtn" type="button" aria-label="Back">←</button>
+    <h1 id="title"><span class="c1">治</span><span class="c2">愈</span><span class="c3">房</span><span class="c4">间</span></h1>
+    <div class="topActions">
+      <div class="scorePill" aria-live="polite"><span class="starIcon">★</span><b id="starCount">0</b></div>
+      <button class="iconBtn gearBtn" id="settingsBtn" type="button" aria-label="Settings">⚙</button>
+    </div>
+  </header>
+
+  <div class="settingsPanel" id="settingsPanel" hidden>
+    <button id="langBtn" type="button">English</button>
+    <button id="soundBtn" type="button">声音开</button>
+  </div>
+
+  <main class="scene" id="scene">
+    <img class="room" src="../assets/room-bubble-zh.png" alt="">
+    <div class="note" id="note" role="button" tabindex="0">
+      <div class="noteText" id="noteText"></div>
+      <img id="noteImage" alt="" hidden>
+    </div>
+    <div class="final" id="final">
+      <div class="finalCard">
+        <p id="finalText"></p>
+        <button id="againBtn" type="button"></button>
+      </div>
+    </div>
+  </main>
+
+  <section class="panel" aria-label="Calm Room controls">
+    <div class="tools" id="tools"></div>
+    <div class="composer">
+      <div class="inputWrap">
+        <textarea id="worryInput" maxlength="160" rows="2"></textarea>
+        <span class="inputStar">★</span>
+      </div>
+      <div class="actionRow">
+        <button class="placeBtn" id="placeBtn" type="button"></button>
+        <button class="photoBtn" id="photoBtn" type="button"><span class="photoIcon">▧</span><span id="photoText"></span></button>
+      </div>
+      <div class="status" aria-live="polite">
+        <span id="pendingLabel">📋 待处理: <b id="pendingCount">0</b></span>
+        <span class="divider"></span>
+        <span id="sparkLabel">⭐ 光点: <b id="sparkCount">0</b></span>
+      </div>
+    </div>
+    <input id="photoInput" type="file" accept="image/*">
+  </section>
+</div>
+
+<script>
+const i18n={
+  zh:{
+    langBtn:'English',
+    soundOn:'声音开',
+    soundOff:'声音关',
+    htmlLang:'zh-CN',
+    placeholder:'写下让你烦的事...',
+    place:'放到桌上',
+    photo:'加图片',
+    final:'心情好点了吗？',
+    again:'再玩一次',
+    pending:'📋 待处理:',
+    spark:'⭐ 光点:',
+    tools:{hammer:'砸碎',fire:'烧掉',tear:'撕开',shredder:'碎纸',ledge:'滑下去',erase:'擦除'}
+  },
+  en:{
+    langBtn:'中文',
+    soundOn:'Sound On',
+    soundOff:'Sound Off',
+    htmlLang:'en',
+    placeholder:"Write what's bothering you...",
+    place:'Place It',
+    photo:'Add Picture',
+    final:'Feeling a little better?',
+    again:'Play Again',
+    pending:'📋 Waiting:',
+    spark:'⭐ Stars:',
+    tools:{hammer:'Smash',fire:'Burn',tear:'Tear',shredder:'Shred',ledge:'Slide Away',erase:'Erase'}
+  }
+};
+const toolOrder=[
+  ['hammer','tool-hammer.png'],['fire','tool-fire.png'],['tear','tool-tear.png'],
+  ['shredder','tool-shredder.png'],['ledge','tool-ledge.png'],['erase','tool-erase.png']
+];
+const roomAssets={
+  zh:'../assets/room-bubble-zh.png',
+  en:'../assets/room-bubble-en.png'
+};
+const actionDurations={
+  hammer:1580,
+  fire:2280,
+  tear:1630,
+  shredder:1880,
+  ledge:1680,
+  erase:2080
+};
+const state={
+  lang:getInitialLang(),
+  tool:'hammer',
+  note:'',
+  imageUrl:'',
+  busy:false,
+  stars:0,
+  soundOn:true,
+  audio:null
+};
+const el={
+  title:document.getElementById('title'),
+  back:document.getElementById('backBtn'),
+  settings:document.getElementById('settingsBtn'),
+  panel:document.getElementById('settingsPanel'),
+  room:document.querySelector('.room'),
+  langBtn:document.getElementById('langBtn'),
+  soundBtn:document.getElementById('soundBtn'),
+  input:document.getElementById('worryInput'),
+  place:document.getElementById('placeBtn'),
+  photo:document.getElementById('photoBtn'),
+  photoText:document.getElementById('photoText'),
+  photoInput:document.getElementById('photoInput'),
+  tools:document.getElementById('tools'),
+  note:document.getElementById('note'),
+  noteText:document.getElementById('noteText'),
+  noteImage:document.getElementById('noteImage'),
+  final:document.getElementById('final'),
+  finalText:document.getElementById('finalText'),
+  again:document.getElementById('againBtn'),
+  scene:document.getElementById('scene'),
+  stars:document.getElementById('starCount'),
+  spark:document.getElementById('sparkCount'),
+  pending:document.getElementById('pendingCount'),
+  pendingLabel:document.getElementById('pendingLabel'),
+  sparkLabel:document.getElementById('sparkLabel')
+};
+function getInitialLang(){
+  const urlLang=new URLSearchParams(location.search).get('lang');
+  if(urlLang==='zh'||urlLang==='en')return urlLang;
+  if(location.pathname.endsWith('/2026/')||location.pathname.endsWith('/2026')||location.pathname.endsWith('/2026/index.html')||location.pathname.endsWith('/qzq/')||location.pathname.endsWith('/qzq')||location.pathname.endsWith('/qzq/index.html'))return 'zh';
+  const saved=localStorage.getItem('calmRoomLang');
+  if(saved==='zh'||saved==='en')return saved;
+  return (navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en';
+}
+function t(){return i18n[state.lang];}
+function renderText(){
+  document.documentElement.lang=t().htmlLang;
+  el.langBtn.textContent=t().langBtn;
+  el.soundBtn.textContent=state.soundOn?t().soundOn:t().soundOff;
+  if(state.lang==='zh'){
+    el.title.innerHTML='<span class="c1">治</span><span class="c2">愈</span><span class="c3">房</span><span class="c4">间</span>';
+  }else{
+    el.title.innerHTML='<span class="c1">Calm</span> <span class="c4">Room</span>';
+  }
+  el.room.src=roomAssets[state.lang];
+  el.input.placeholder=t().placeholder;
+  el.place.textContent=t().place;
+  el.photoText.textContent=t().photo;
+  el.finalText.textContent=t().final;
+  el.again.textContent=t().again;
+  el.pendingLabel.childNodes[0].nodeValue=t().pending+' ';
+  el.sparkLabel.childNodes[0].nodeValue=t().spark+' ';
+  renderTools();
+}
+function renderTools(){
+  el.tools.innerHTML='';
+  for(const [key,icon] of toolOrder){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='tool'+(key===state.tool?' active':'');
+    b.dataset.tool=key;
+    b.setAttribute('aria-label',t().tools[key]);
+    b.innerHTML=`<span class="icon"><img src="../assets/${icon}" alt=""></span><span class="label">${t().tools[key]}</span>`;
+    b.addEventListener('click',()=>selectTool(key));
+    el.tools.appendChild(b);
+  }
+}
+function updateCounts(){
+  const pending=state.note||state.imageUrl?1:0;
+  el.pending.textContent=pending;
+  el.stars.textContent=state.stars;
+  el.spark.textContent=state.stars;
+}
+function selectTool(key){
+  unlockAudio();
+  state.tool=key;
+  renderTools();
+  if((state.note||state.imageUrl)&&!state.busy)resolveNote(key);
+  else pulse(el.input);
+}
+function placeNote(){
+  unlockAudio();
+  const text=el.input.value.trim();
+  if(!text&&!state.imageUrl){
+    pulse(el.input);
+    return;
+  }
+  resetFinalOnly();
+  state.note=text;
+  showNote();
+  el.input.value='';
+  playSound('add');
+}
+function choosePhoto(file){
+  if(!file)return;
+  unlockAudio();
+  resetFinalOnly();
+  if(state.imageUrl)URL.revokeObjectURL(state.imageUrl);
+  state.imageUrl=URL.createObjectURL(file);
+  state.note='';
+  showNote();
+  playSound('add');
+}
+function showNote(){
+  clearEffects();
+  el.noteText.textContent=state.note;
+  if(state.imageUrl){
+    el.noteImage.src=state.imageUrl;
+    el.noteImage.hidden=false;
+    el.note.classList.add('hasImage');
+  }else{
+    el.noteImage.removeAttribute('src');
+    el.noteImage.hidden=true;
+    el.note.classList.remove('hasImage');
+  }
+  el.note.className='note show'+(state.imageUrl?' hasImage':'');
+  state.busy=false;
+  updateCounts();
+}
+function resolveNote(tool){
+  if((!state.note&&!state.imageUrl)||state.busy)return;
+  state.busy=true;
+  navigator.vibrate?.(18);
+  playSound(tool);
+  burst(tool);
+  clearEffects();
+  el.note.className='note show gone '+tool+(state.imageUrl?' hasImage':'');
+  if(tool==='fire')addFireLayer();
+  if(tool==='erase')addEraseLayer();
+  setTimeout(()=>{
+    clearNote();
+    state.stars+=1;
+    updateCounts();
+    showFinal();
+    playSound('complete');
+  },actionDurations[tool]||1750);
+}
+function clearNote(){
+  state.note='';
+  if(state.imageUrl){
+    URL.revokeObjectURL(state.imageUrl);
+    state.imageUrl='';
+  }
+  state.busy=false;
+  el.note.className='note';
+  el.noteText.textContent='';
+  el.noteImage.removeAttribute('src');
+  el.noteImage.hidden=true;
+  clearEffects();
+  updateCounts();
+}
+function showFinal(){
+  el.final.classList.add('show');
+  el.finalText.textContent=t().final;
+  el.again.textContent=t().again;
+}
+function resetFinalOnly(){
+  el.final.classList.remove('show');
+}
+function resetRoom(){
+  unlockAudio();
+  clearNote();
+  state.stars=0;
+  el.input.value='';
+  resetFinalOnly();
+  updateCounts();
+}
+function pulse(node){
+  node.animate(
+    [{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
+    {duration:220}
+  );
+}
+function clearEffects(){
+  el.note.querySelectorAll('.effectLayer').forEach(layer=>layer.remove());
+}
+function addFireLayer(){
+  const layer=document.createElement('div');
+  layer.className='effectLayer flameLayer';
+  for(let i=0;i<4;i++)layer.appendChild(document.createElement('span'));
+  el.note.appendChild(layer);
+}
+function addEraseLayer(){
+  const layer=document.createElement('div');
+  layer.className='effectLayer eraserLayer';
+  const brush=document.createElement('span');
+  brush.className='eraserBrush';
+  layer.appendChild(brush);
+  for(let i=0;i<3;i++){
+    const dust=document.createElement('span');
+    dust.className='eraserDust';
+    layer.appendChild(dust);
+  }
+  el.note.appendChild(layer);
+}
+function burst(tool){
+  const rect=el.scene.getBoundingClientRect();
+  const cx=rect.width/2,cy=rect.height*.56;
+  const colors={
+    hammer:['#c49a74','#ffd07e','#ffffff'],
+    fire:['#ff733a','#ffc247','#ff4d4d'],
+    tear:['#d8b7ea','#fff0ff','#b596c9'],
+    shredder:['#f7efe4','#d8c6ad','#ffffff'],
+    ledge:['#68c7ed','#a8e0f5','#ffffff'],
+    erase:['#fff1b8','#ffffff','#ffd67e']
+  }[tool]||['#ffd680'];
+  for(let i=0;i<22;i++){
+    const p=document.createElement('span');
+    p.className='particle';
+    p.style.left=`${cx}px`;
+    p.style.top=`${cy}px`;
+    p.style.background=colors[i%colors.length];
+    p.style.setProperty('--x',`${(Math.random()*2-1)*170}px`);
+    p.style.setProperty('--y',`${-40-Math.random()*150}px`);
+    el.scene.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+}
+function unlockAudio(){
+  if(!state.soundOn||state.audio)return;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  const ctx=new AC();
+  const master=ctx.createGain();
+  master.gain.value=.16;
+  master.connect(ctx.destination);
+  state.audio={ctx,master,i:0,timer:null};
+  ctx.resume?.();
+  bgPulse();
+  state.audio.timer=setInterval(bgPulse,1400);
+}
+function stopAudio(){
+  if(!state.audio)return;
+  clearInterval(state.audio.timer);
+  state.audio.ctx.close?.();
+  state.audio=null;
+}
+function tone(freq,dur=.22,vol=.035,opt={}){
+  const audio=state.audio;if(!audio||!state.soundOn)return;
+  const {ctx,master}=audio;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  const when=ctx.currentTime+(opt.delay||0);
+  osc.type=opt.type||'sine';
+  osc.frequency.setValueAtTime(freq,when);
+  if(opt.to)osc.frequency.exponentialRampToValueAtTime(Math.max(30,opt.to),when+dur);
+  gain.gain.setValueAtTime(.0001,when);
+  gain.gain.linearRampToValueAtTime(vol,when+.02);
+  gain.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  osc.connect(gain);gain.connect(master);
+  osc.start(when);osc.stop(when+dur+.04);
+}
+function noise(dur=.18,vol=.03,freq=1200){
+  const audio=state.audio;if(!audio||!state.soundOn)return;
+  const {ctx,master}=audio;
+  const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*dur),ctx.sampleRate);
+  const data=buf.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
+  const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  filter.type='bandpass';filter.frequency.value=freq;
+  gain.gain.value=vol;
+  src.buffer=buf;src.connect(filter);filter.connect(gain);gain.connect(master);
+  src.start();src.stop(ctx.currentTime+dur);
+}
+function bgPulse(){
+  const audio=state.audio;if(!audio||!state.soundOn)return;
+  const notes=[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46];
+  const f=notes[audio.i++%notes.length];
+  tone(f,.82,.016,{type:'sine'});
+  tone(f/2,1.05,.01,{type:'triangle',delay:.02});
+}
+function playSound(kind){
+  if(!state.soundOn)return;
+  unlockAudio();
+  switch(kind){
+    case'add':tone(440,.12,.035,{type:'triangle'});tone(660,.14,.025,{delay:.05});break;
+    case'hammer':tone(130,.16,.08,{type:'triangle'});noise(.08,.025,650);break;
+    case'fire':noise(.38,.03,1200);tone(260,.18,.02,{type:'triangle'});break;
+    case'tear':tone(1180,.05,.03,{type:'square'});tone(850,.05,.028,{type:'square',delay:.08});break;
+    case'shredder':noise(.4,.035,2400);break;
+    case'ledge':tone(880,.5,.035,{to:360});break;
+    case'erase':noise(.32,.026,1800);break;
+    case'complete':tone(660,.16,.024,{delay:.02});tone(880,.2,.02,{delay:.14});tone(1175,.26,.016,{delay:.28});break;
+  }
+}
+el.back.addEventListener('click',()=>{
+  if(history.length>1)history.back();
+  else resetRoom();
+});
+el.settings.addEventListener('click',()=>{
+  el.panel.hidden=!el.panel.hidden;
+});
+el.langBtn.addEventListener('click',()=>{
+  state.lang=state.lang==='zh'?'en':'zh';
+  localStorage.setItem('calmRoomLang',state.lang);
+  renderText();
+});
+el.soundBtn.addEventListener('click',()=>{
+  state.soundOn=!state.soundOn;
+  if(!state.soundOn)stopAudio();
+  renderText();
+});
+el.place.addEventListener('click',placeNote);
+el.photo.addEventListener('click',()=>el.photoInput.click());
+el.photoInput.addEventListener('change',e=>choosePhoto(e.target.files?.[0]));
+el.input.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){
+    e.preventDefault();
+    placeNote();
+  }
+});
+el.note.addEventListener('click',()=>resolveNote(state.tool));
+el.note.addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();resolveNote(state.tool);}
+});
+el.again.addEventListener('click',resetRoom);
+document.addEventListener('pointerdown',unlockAudio,{once:true});
+document.addEventListener('keydown',unlockAudio,{once:true});
+renderText();
+updateCounts();
+</script>
+</body>
+</html>
